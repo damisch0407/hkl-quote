@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HKL SCAFFOLDING QUOTATION SYSTEM</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 15px; margin-top: 0; }
+        
+        /* Client Info Section */
+        .client-info-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e9ecef; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-group { display: flex; flex-direction: column; }
+        .info-group label { font-size: 13px; font-weight: bold; color: #34495e; margin-bottom: 5px; }
+        .info-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .print-only { display: none; font-size: 14px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; min-height: 20px; }
+
+        /* Dashboard */
+        .no-print-dash { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e9ecef; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        
+        /* Buttons */
+        .btn { padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 2px rgba(0,0,0,0.1); color: white; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); opacity: 0.95; }
+        .btn-orange { background: #ff9800; }
+        .btn-blue { background: #2196f3; }
+        .btn-red { background: #d32f2f; }
+        .btn-green { background: #4caf50; }
+        .btn-dark { background: #34495e; }
+
+        .btn-remove { background: #fff; color: #d32f2f; border: 1px solid #d32f2f; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn-remove:hover { background: #d32f2f; color: white; }
+
+        select, input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #2c3e50; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
+        tr:hover { background-color: #f1f7fe; }
+        
+        .qty-input { width: 70px; padding: 6px; border: 1px solid #3498db; border-radius: 4px; text-align: center; font-weight: bold; font-size: 14px; background: #fff; }
+        
+        /* Summary */
+        .summary-wrapper { margin-top: 30px; display: flex; justify-content: flex-end; }
+        .price-card { width: 400px; background: #fff; padding: 25px; border-radius: 8px; border: 2px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .sum-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 15px; }
+        .grand-total { font-size: 24px; font-weight: bold; color: #e74c3c; border-top: 2px solid #2c3e50; padding-top: 15px; margin-top: 15px; }
+        
+        .discount-container { display: flex; gap: 5px; }
+        .discount-input { width: 100px; text-align: right; color: #e74c3c; font-weight: bold; }
+
+        /* --- PRINT LOGIC --- */
+        .print-prefix { display: none; }
+
+        @media print { 
+            .no-print, .no-print-dash, .btn-remove { display: none !important; } 
+            .print-only { display: block !important; }
+            .col-condition { display: none !important; }
+            .print-prefix { display: inline !important; font-weight: bold; margin-right: 5px; }
+
+            .client-info-section { border: none; padding: 0; margin-bottom: 30px; background: transparent; }
+            .info-grid { gap: 20px; }
+            .qty-input { border: none; background: transparent; appearance: none; text-align: center; padding: 0; }
+            .container { box-shadow: none; width: 100%; padding: 0; margin: 0; max-width: 100%; } 
+            body { background: white; }
+            .price-card { border: none; box-shadow: none; width: 100%; }
+            th, td { border-bottom: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>HKL SCAFFOLDING QUOTATION</h1>
+
+    <div class="client-info-section">
+        <div class="info-grid">
+            <div class="info-group">
+                <label>Client Name:</label>
+                <input type="text" id="clientName" placeholder="Enter company or individual name" class="no-print">
+                <span class="print-only" id="print_clientName"></span>
+            </div>
+            <div class="info-group">
+                <label>Quote No:</label>
+                <input type="text" id="quoteNo" placeholder="e.g., HKL-2024-001" class="no-print">
+                <span class="print-only" id="print_quoteNo"></span>
+            </div>
+            <div class="info-group">
+                <label>Contact:</label>
+                <input type="text" id="clientContact" placeholder="Enter contact number" class="no-print">
+                <span class="print-only" id="print_clientContact"></span>
+            </div>
+            <div class="info-group">
+                <label>Date:</label>
+                <input type="date" id="quoteDate" class="no-print">
+                <span class="print-only" id="print_quoteDate"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="no-print-dash no-print">
+        <div style="display:flex; align-items:center; gap:10px; margin-right:20px;">
+            <strong>Condition:</strong>
+            <select id="defaultCondition">
+                <option value="um">Used (Medium)</option>
+                <option value="nm">New (Medium)</option>
+                <option value="ul">Used (Low)</option>
+                <option value="uh">Used (High)</option>
+                <option value="nl">New (Low)</option>
+                <option value="nh">New (High)</option>
+            </select>
+        </div>
+        
+        <button class="btn btn-orange" onclick="generateFullRinglockList()">✨ Ringlock List</button>
+        <button class="btn btn-blue" onclick="generateFrameList()">🖼️ Frame List</button>
+        <button class="btn btn-red" onclick="clearList()" style="background:#d32f2f; border:none;">Clear List</button>
+
+        <div style="flex-grow: 1; border-left: 2px solid #ddd; padding-left: 20px; display: flex; gap: 10px;">
+             <input type="text" id="manualSearch" list="itemData" placeholder="Search Item..." style="width: 200px;">
+             <datalist id="itemData"></datalist>
+             <button class="btn btn-green" onclick="addManualItem()">Add Item</button>
+        </div>
+    </div>
+
+    <table id="mainTable">
+        <thead>
+            <tr>
+                <th style="width: 5%;">S/No</th>
+                <th style="width: 50%;">Description</th>
+                <th class="col-condition" style="width: 15%;">Condition</th>
+                <th style="width: 10%;">Unit Price ($)</th>
+                <th style="width: 10%; text-align:center;">Qty</th>
+                <th style="width: 10%; text-align:right;">Subtotal ($)</th>
+                <th class="no-print" style="width: 5%; text-align:center;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="quoteBody"></tbody>
+    </table>
+
+    <div class="summary-wrapper">
+        <div class="price-card">
+            <div class="sum-row"><span>Subtotal:</span><span>$<span id="subTotal">0.00</span></span></div>
+            <div class="sum-row" style="color: #e74c3c; font-weight: bold;">
+                <span>Discount:</span>
+                <div class="discount-container">
+                    <select id="discountType" class="no-print" onchange="calculateTotals()" style="padding:4px; font-size:12px;">
+                        <option value="fixed">$</option>
+                        <option value="percent">%</option>
+                    </select>
+                    <input type="number" id="discountVal" value="0" class="discount-input no-print" oninput="calculateTotals()">
+                    <span class="print-only" style="border:none;">$<span id="print_discountAmount">0.00</span></span>
+                </div>
+            </div>
+            <div class="sum-row" style="font-size: 14px; color: #888;"><span>Taxable Amount:</span><span>$<span id="afterDiscount">0.00</span></span></div>
+            <div class="sum-row"><span>GST (9%):</span><span>$<span id="gstAmount">0.00</span></span></div>
+            <div class="grand-total sum-row"><span>Total Payable:</span><span>$<span id="finalTotal">0.00</span></span></div>
+        </div>
+    </div>
+    
+    <div style="text-align: right; margin-top: 20px;">
+        <button class="btn btn-dark no-print" onclick="preparePrint()" style="padding: 12px 40px; font-size: 16px;">🖨️ Print / Save PDF</button>
+    </div>
+</div>
+
+<script>
+// --- Full Database (128 Items) ---
+const db = [
+    { s: 1, d: "Main Frame 1219 x 1524mm", nl: 0, nm: 0, nh: 0, ul: 7, um: 9, uh: 11 },
+    { s: 2, d: "Main Frame 1219 x 1700mm", nl: 0, nm: 0, nh: 0, ul: 8, um: 10, uh: 12 },
+    { s: 3, d: "Main Frame 1219 x 1930mm", nl: 0, nm: 0, nh: 0, ul: 7, um: 9, uh: 11 },
+    { s: 4, d: "Ladder Frame 1219 x 0914mm", nl: 0, nm: 0, nh: 0, ul: 5, um: 7, uh: 9 },
+    { s: 5, d: "Ladder Frame 1219 x 1219mm", nl: 0, nm: 0, nh: 0, ul: 6, um: 8, uh: 10 },
+    { s: 6, d: "Compact Frame 762 x 1700mm", nl: 0, nm: 0, nh: 0, ul: 9, um: 11, uh: 13.5 },
+    { s: 7, d: "Joint Pin", nl: 0.65, nm: 0.75, nh: 1, ul: 0.4, um: 0.55, uh: 0.75 },
+    { s: 8, d: "Joint Pin SS280", nl: 0, nm: 0, nh: 0, ul: 0.4, um: 0.55, uh: 0.75 },
+    { s: 9, d: "Arm Lock 507.5", nl: 0, nm: 0, nh: 0, ul: 1.8, um: 2, uh: 2.4 },
+    { s: 10, d: "Arm Lock 507.5 SS280", nl: 0, nm: 0, nh: 0, ul: 0, um: 0, uh: 0 },
+    { s: 11, d: "1099mm Cross Brace (Galv) SS280", nl: 3, nm: 3.3, nh: 4, ul: 0, um: 0, uh: 0 },
+    { s: 12, d: "1383mm Cross Brace (Galv) SS280", nl: 3.2, nm: 3.5, nh: 4.3, ul: 0, um: 0, uh: 0 },
+    { s: 13, d: "1524mm Cross Brace (Galv) SS280", nl: 3.5, nm: 3.8, nh: 4.5, ul: 0, um: 0, uh: 0 },
+    { s: 14, d: "1724mm Cross Brace (Galv) SS280", nl: 3.8, nm: 4.5, nh: 5.2, ul: 0, um: 0, uh: 0 },
+    { s: 15, d: "1928mm Cross Brace (Galv) SS280", nl: 4.1, nm: 5, nh: 5.5, ul: 0, um: 0, uh: 0 },
+    { s: 16, d: "2195mm Cross Brace (Galv) SS280", nl: 4.5, nm: 5.5, nh: 6.5, ul: 0, um: 0, uh: 0 },
+    { s: 17, d: "1099mm Cross Brace (Galv)", nl: 2.5, nm: 3, nh: 3.6, ul: 1.5, um: 1.65, uh: 2 },
+    { s: 18, d: "1383mm Cross Brace (Galv)", nl: 2.7, nm: 3, nh: 3.8, ul: 2, um: 2.2, uh: 2.7 },
+    { s: 19, d: "1524mm Cross Brace (Galv)", nl: 3, nm: 3.5, nh: 4.2, ul: 2.5, um: 2.75, uh: 3.3 },
+    { s: 20, d: "1724mm Cross Brace (Galv)", nl: 3.3, nm: 4, nh: 4.5, ul: 2.5, um: 2.75, uh: 3.3 },
+    { s: 21, d: "1928mm Cross Brace (Galv)", nl: 3.6, nm: 4.5, nh: 5.4, ul: 3, um: 3.3, uh: 4 },
+    { s: 22, d: "2195mm Cross Brace (Galv)", nl: 4, nm: 5, nh: 6, ul: 3.5, um: 3.85, uh: 4.7 },
+    { s: 23, d: "Jack Base 600mm OD30mm", nl: 4, nm: 4.2, nh: 4.8, ul: 2.5, um: 2.75, uh: 3.3 },
+    { s: 24, d: "U-Head Jack 600mm OD30mm", nl: 4.7, nm: 5.2, nh: 5.8, ul: 3.5, um: 3.85, uh: 4.7 },
+    { s: 25, d: "Jack Base 600mm OD34mm", nl: 3.5, nm: 4, nh: 5, ul: 3, um: 3.3, uh: 4 },
+    { s: 26, d: "U-Head Jack 600mm OD34mm", nl: 4, nm: 4.5, nh: 5.5, ul: 3.5, um: 3.85, uh: 4.7 },
+    { s: 27, d: "Jack Base 600mm OD35mm SS280", nl: 5, nm: 5.5, nh: 6.5, ul: 3.2, um: 4, uh: 4.8 },
+    { s: 28, d: "U-Head Jack 600mm OD35mm SS280", nl: 5.5, nm: 6, nh: 6.8, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 29, d: "Monkey Ladder 3300x275", nl: 12, nm: 15, nh: 18, ul: 10, um: 11, uh: 13.2 },
+    { s: 30, d: "Catwalk Panel 500 x 1829mm SS280", nl: 28, nm: 35, nh: 42, ul: 19, um: 21, uh: 25.5 },
+    { s: 31, d: "Staircase 1829 x 1725mm", nl: 37, nm: 42, nh: 50, ul: 30, um: 33, uh: 40 },
+    { s: 32, d: "Staircase 1829x 1955mm", nl: 39, nm: 45, nh: 55, ul: 32, um: 35.5, uh: 43 },
+    { s: 33, d: "Fixed Clamp -KSK SS311", nl: 1.05, nm: 1.2, nh: 1.3, ul: 0.7, um: 0.8, uh: 1 },
+    { s: 34, d: "Swivel Clamp -KSK SS311", nl: 1.05, nm: 1.2, nh: 1.3, ul: 0.7, um: 0.8, uh: 1 },
+    { s: 35, d: "Fixed Clamp (R CLAMP)", nl: 0.85, nm: 1, nh: 1.1, ul: 0, um: 0, uh: 0 },
+    { s: 36, d: "Swivel Clamp (R CLAMP)", nl: 0.85, nm: 1, nh: 1.1, ul: 0, um: 0, uh: 0 },
+    { s: 37, d: "Fixed Clamp 60.5x48.6mm", nl: 1.6, nm: 1.8, nh: 2, ul: 1.3, um: 1.5, uh: 1.8 },
+    { s: 38, d: "Swivel Clamp 60.5x48.6mm", nl: 1.8, nm: 2, nh: 2.2, ul: 1.3, um: 1.5, uh: 1.8 },
+    { s: 39, d: "Bone Joint", nl: 1.05, nm: 1.2, nh: 1.35, ul: 0.9, um: 1, uh: 1.2 },
+    { s: 40, d: "Plank Clamp", nl: 1, nm: 1.1, nh: 1.2, ul: 0.9, um: 1, uh: 1.2 },
+    { s: 41, d: "End Cap", nl: 0.18, nm: 0.25, nh: 0.35, ul: 0, um: 0, uh: 0 },
+    { s: 42, d: "Clamp Cover", nl: 0.3, nm: 0.45, nh: 0.55, ul: 0, um: 0, uh: 0 },
+    { s: 43, d: "Half Clamp/Coupler", nl: 0.95, nm: 1.2, nh: 1.4, ul: 0, um: 0, uh: 0 },
+    { s: 44, d: "Beam Clamp Fixed", nl: 2.8, nm: 3, nh: 3.5, ul: 2, um: 2.2, uh: 2.7 },
+    { s: 45, d: "Beam Clamp Swivel", nl: 3.2, nm: 3.5, nh: 4.2, ul: 2.5, um: 2.75, uh: 3.3 },
+    { s: 46, d: "Base Plate OD32mm", nl: 1.1, nm: 1.5, nh: 1.8, ul: 0.8, um: 1, uh: 1.2 },
+    { s: 47, d: "Base Plate OD48.6mm", nl: 1.3, nm: 1.8, nh: 2, ul: 1, um: 1.2, uh: 1.5 },
+    { s: 48, d: "6m GI Pipe (48.6 x 2.4mm) Hot Dipped R-Pipe", nl: 12.5, nm: 14.5, nh: 15.5, ul: 0, um: 0, uh: 0 },
+    { s: 49, d: "6m GI Pipe (48.6 x 2.4mm) Hot Dipped STK400 Pre-Galv", nl: 14.5, nm: 16.5, nh: 18, ul: 0, um: 0, uh: 0 },
+    { s: 50, d: "6m Pipe (48.6 x 2.4mm) STK500 SS311", nl: 18, nm: 19.5, nh: 21.5, ul: 15, um: 16.5, uh: 19.8 },
+    { s: 51, d: "210 x 1m Metal Plank Box Type SS280", nl: 4.5, nm: 5, nh: 6, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 52, d: "210 x 1.5m Metal Plank Box Type SS280", nl: 6, nm: 7, nh: 9, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 53, d: "210 x 2m Metal Plank Box Type SS280", nl: 8, nm: 9, nh: 11, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 54, d: "210 x 2.5m Metal Plank Box Type SS280", nl: 8.5, nm: 11, nh: 13.5, ul: 8, um: 8.8, uh: 10.6 },
+    { s: 55, d: "210 x 3m Metal Plank Box Type SS280", nl: 9.5, nm: 11, nh: 13.5, ul: 7, um: 7.7, uh: 9.3 },
+    { s: 56, d: "210 x 4m Metal Plank Box Type SS280", nl: 11.8, nm: 13.5, nh: 16.2, ul: 10, um: 11, uh: 13.2 },
+    { s: 57, d: "210 x 2m Metal Plank Flat Type", nl: 4.5, nm: 4.9, nh: 5.5, ul: 0, um: 0, uh: 0 },
+    { s: 58, d: "210 x 3.5m Metal Plank Flat Type", nl: 5.3, nm: 6.5, nh: 8, ul: 0, um: 0, uh: 0 },
+    { s: 59, d: "210 x 4m Metal Plank Flat Type", nl: 6.8, nm: 8, nh: 10, ul: 0, um: 0, uh: 0 },
+    { s: 60, d: "240 x 3m Metal Plank Flat Type", nl: 8, nm: 10.5, nh: 11.5, ul: 0, um: 0, uh: 0 },
+    { s: 61, d: "240 x 4m Metal Plank Flat Type", nl: 12.8, nm: 14, nh: 15.5, ul: 0, um: 0, uh: 0 },
+    { s: 62, d: "240 x 1m Metal Plank Box Type SS280", nl: 4.5, nm: 5, nh: 6, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 63, d: "240 x 1.5m Metal Plank Box Type SS280", nl: 6, nm: 8, nh: 9.7, ul: 5.5, um: 6.1, uh: 7.3 },
+    { s: 64, d: "240 x 2m Metal Plank Box Type SS280", nl: 8, nm: 11, nh: 14.5, ul: 7, um: 7.7, uh: 9.3 },
+    { s: 65, d: "240 x 2.5m Metal Plank Box Type SS280", nl: 11.5, nm: 13, nh: 16, ul: 8.5, um: 9.5, uh: 11.5 },
+    { s: 66, d: "240 x 3m Metal Plank Box Type SS280", nl: 11.5, nm: 15, nh: 18, ul: 10, um: 11, uh: 13.2 },
+    { s: 67, d: "240 x 4m Metal Plank Box Type SS280", nl: 15.5, nm: 17, nh: 20.5, ul: 12, um: 13.2, uh: 15.9 },
+    { s: 68, d: "Wall Tie L=500mm", nl: 5.5, nm: 6.2, nh: 7.5, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 69, d: "2.1m Triangle Prop (Thickness 3.7mm)", nl: 19, nm: 20.9, nh: 26.5, ul: 18, um: 20, uh: 24 },
+    { s: 70, d: "2.5m Triangle Prop (Thickness 3.7mm)", nl: 22, nm: 24.2, nh: 30.92, ul: 20, um: 22, uh: 26.5 },
+    { s: 71, d: "3.4m Triangle Prop (Thickness 3.7mm)", nl: 26.5, nm: 29.15, nh: 31.98, ul: 22, um: 24.5, uh: 30 },
+    { s: 72, d: "3.9m Triangle Prop (Thickness 3.7mm)", nl: 31, nm: 34.1, nh: 40.92, ul: 24, um: 26.4, uh: 32 },
+    { s: 73, d: "4.4m Triangle Prop (Thickness 3.7mm)", nl: 39, nm: 42.9, nh: 51.48, ul: 35, um: 38, uh: 46.5 },
+    { s: 74, d: "4.8m Triangle Prop (Thickness 3.7mm)", nl: 39, nm: 42.9, nh: 51.48, ul: 35, um: 38, uh: 46.5 },
+    { s: 75, d: "6m Triangle Prop (Thickness 3.7mm)", nl: 65, nm: 71.5, nh: 87, ul: 55, um: 60.5, uh: 72.6 },
+    { s: 76, d: "Steel Prop M70 (2.0M - 4.5M)", nl: 17, nm: 18.7, nh: 24, ul: 14, um: 15.5, uh: 18.6 },
+    { s: 77, d: "Steel Prop M80 (2.6M - 4.8M)", nl: 19, nm: 20.9, nh: 24, ul: 15, um: 16.5, uh: 19.8 },
+    { s: 78, d: "Safety Net (1.8 x 5.1m) (Blue) (Japan Type)", nl: 11.5, nm: 16, nh: 21, ul: 0, um: 0, uh: 0 },
+    { s: 79, d: "Safety Net (1.8 x 5.1m) (Grey) (Japan Type)", nl: 11.5, nm: 16, nh: 21, ul: 0, um: 0, uh: 0 },
+    { s: 80, d: "Japan Sound Barrier Sheet 1.8x3.4m (1200G/M2) Grey", nl: 29, nm: 40, nh: 48, ul: 0, um: 0, uh: 0 },
+    { s: 81, d: "BS1139 Drop Forged Beam Clamp-Fixed", nl: 3.5, nm: 3.9, nh: 4.7, ul: 2.5, um: 2.8, uh: 3.5 },
+    { s: 82, d: "BS1139 Drop Forged Beam Clamp-Swivel", nl: 3.8, nm: 4.2, nh: 5.2, ul: 2.7, um: 3, uh: 3.8 },
+    { s: 83, d: "BS1139 Drop Forged Fixed Coupler", nl: 1.9, nm: 2.1, nh: 2.7, ul: 1.6, um: 1.8, uh: 2.2 },
+    { s: 84, d: "BS1139 Drop Forged Swivel Coupler", nl: 1.9, nm: 2.1, nh: 2.7, ul: 1.6, um: 1.8, uh: 2.2 },
+    { s: 85, d: "BS1139 Drop Forged Putlog Coupler", nl: 1.6, nm: 1.8, nh: 2.2, ul: 1, um: 1.1, uh: 1.4 },
+    { s: 86, d: "BS1139 Drop Forged Ladder Clamp 48.3", nl: 6.5, nm: 7.2, nh: 8.7, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 87, d: "BS 1139 Pressed Steel Bone Joint Pin", nl: 1.9, nm: 2.1, nh: 2.7, ul: 1.2, um: 1.4, uh: 1.8 },
+    { s: 88, d: "BS1139 Pressed Steel Sleeve Coupler", nl: 1.8, nm: 2.1, nh: 2.5, ul: 1.2, um: 1.4, uh: 1.8 },
+    { s: 89, d: "BS1139 Pressed Steel Fixed Coupler", nl: 1.8, nm: 2.1, nh: 2.5, ul: 1.2, um: 1.4, uh: 1.8 },
+    { s: 90, d: "BS1139 Pressed Steel Swivel Coupler", nl: 1.8, nm: 2.1, nh: 2.5, ul: 1.2, um: 1.4, uh: 1.8 },
+    { s: 91, d: "BS1139 Hot Dipped Galv Scaffolding Pipe 48.3X4.0X6000mm", nl: 30, nm: 33, nh: 38, ul: 24, um: 27, uh: 32 },
+    { s: 92, d: "BS Base Plate-150X150X5mm (GALV)", nl: 1.5, nm: 2.1, nh: 2.7, ul: 1.2, um: 1.4, uh: 1.8 },
+    { s: 93, d: "BS Base Plate-150X150X8mm (GALV)", nl: 3.5, nm: 3.8, nh: 4.2, ul: 2.5, um: 2.8, uh: 3.5 },
+    { s: 94, d: "Ringlock System Standard-0500mm (G)", nl: 3.7, nm: 4.5, nh: 5, ul: 3, um: 3.3, uh: 4 },
+    { s: 95, d: "Ringlock System Standard-1000mm (G)", nl: 5.6, nm: 7.5, nh: 9, ul: 4.5, um: 5, uh: 6 },
+    { s: 96, d: "Ringlock System Standard-1500mm (G)", nl: 10.2, nm: 13, nh: 16, ul: 9, um: 10, uh: 12 },
+    { s: 97, d: "Ringlock System Standard-2000mm (G)", nl: 11, nm: 14, nh: 18, ul: 10, um: 12.5, uh: 15 },
+    { s: 98, d: "Ringlock System Standard-2500mm (G)", nl: 14.28, nm: 17.5, nh: 21, ul: 12.5, um: 16, uh: 19 },
+    { s: 99, d: "Ringlock System Standard-3000mm (G)", nl: 16.31, nm: 20, nh: 24, ul: 14, um: 18.7, uh: 22.5 },
+    { s: 100, d: "Ringlock System Ledger-0500mm", nl: 4, nm: 4.6, nh: 6.5, ul: 3, um: 3.3, uh: 4 },
+    { s: 101, d: "Ringlock System Ledger-0630mm", nl: 4.5, nm: 6, nh: 7.5, ul: 3.5, um: 4, uh: 5 },
+    { s: 102, d: "Ringlock System Ledger-0732mm", nl: 6, nm: 7.5, nh: 9, ul: 4, um: 4.4, uh: 5.3 },
+    { s: 103, d: "Ringlock System Ledger-0914mm", nl: 7, nm: 8, nh: 10, ul: 4.5, um: 5, uh: 6 },
+    { s: 104, d: "Ringlock System Ledger-1219mm", nl: 9, nm: 10, nh: 12, ul: 6.5, um: 7.2, uh: 8.5 },
+    { s: 105, d: "Ringlock System Ledger-1524mm", nl: 10, nm: 11, nh: 13.5, ul: 7.5, um: 8.5, uh: 10 },
+    { s: 106, d: "Ringlock System Ledger-1829mm", nl: 12, nm: 13.9, nh: 16.5, ul: 8, um: 8.8, uh: 10.6 },
+    { s: 107, d: "Ringlock System Ledger-2440mm", nl: 15, nm: 17.5, nh: 21, ul: 10, um: 11, uh: 13.2 },
+    { s: 108, d: "Ringlock System Diagonal Brace 1500mm x 1500mm", nl: 7, nm: 8.5, nh: 11.2, ul: 6, um: 6.6, uh: 8 },
+    { s: 109, d: "Ringlock System Diagonal Brace 1000mm x 1500mm", nl: 7.5, nm: 9, nh: 11.7, ul: 6, um: 6.6, uh: 8 },
+    { s: 110, d: "Ringlock System Diagonal Brace 0732mm x 1500mm", nl: 8, nm: 9.5, nh: 12.5, ul: 6.5, um: 7.2, uh: 9 },
+    { s: 111, d: "Ringlock System Diagonal Brace 1214mm x 1500mm", nl: 8.5, nm: 10.5, nh: 13.8, ul: 7, um: 7.7, uh: 9.3 },
+    { s: 112, d: "Ringlock System Diagonal Brace 1219mm x 1500mm", nl: 9, nm: 10.5, nh: 13.8, ul: 7, um: 7.7, uh: 9.3 },
+    { s: 113, d: "Ringlock System Diagonal Brace 1524mm x 1500mm", nl: 9.7, nm: 10.7, nh: 14, ul: 7.6, um: 8.5, uh: 10.5 },
+    { s: 114, d: "Ringlock System Diagonal Brace 1829mm x 1500mm", nl: 10, nm: 11, nh: 15, ul: 8, um: 8.8, uh: 10.6 },
+    { s: 115, d: "Ringlock System Diagonal Brace 2440mm x 2000mm", nl: 12, nm: 13.5, nh: 18, ul: 9.5, um: 10.5, uh: 13 },
+    { s: 116, d: "Ringlock System Transom 732mm", nl: 8, nm: 9, nh: 11, ul: 6.5, um: 7.2, uh: 9 },
+    { s: 117, d: "Ringlock System Transom 914mm", nl: 6, nm: 7, nh: 9, ul: 4.5, um: 5, uh: 6 },
+    { s: 118, d: "Ringlock System Transom 1219mm", nl: 7, nm: 8, nh: 10, ul: 5.5, um: 6.1, uh: 7.3 },
+    { s: 119, d: "Ringlock System Transom 1524mm", nl: 8, nm: 9, nh: 11, ul: 6, um: 6.6, uh: 8 },
+    { s: 120, d: "Ringlock System Transom 1829mm", nl: 9, nm: 10, nh: 13, ul: 7, um: 7.7, uh: 9.3 },
+    { s: 121, d: "Ringlock System U-Head Jack 600mm OD38", nl: 9.5, nm: 10.5, nh: 12, ul: 9, um: 10, uh: 12 },
+    { s: 122, d: "Ringlock System U-Head Jack 800mm", nl: 15, nm: 16.5, nh: 20, ul: 15, um: 16.5, uh: 19.8 },
+    { s: 123, d: "Ringlock System Jack Base 600mm OD38", nl: 9.5, nm: 10, nh: 12, ul: 6, um: 6.6, uh: 8 },
+    { s: 124, d: "Ringlock System Jack Base 800mm", nl: 12, nm: 13.5, nh: 16.5, ul: 10.5, um: 12, uh: 14.4 },
+    { s: 125, d: "Ringlock System Side Bracket-1000mm c/w Spigot", nl: 45, nm: 50, nh: 60, ul: 35, um: 38.5, uh: 46 },
+    { s: 126, d: "Ringlock Staircase 1829mmx450mmx2000mm (G)", nl: 45, nm: 50, nh: 60, ul: 35, um: 38.5, uh: 46 },
+    { s: 127, d: "BS Rack Hot Dip-0770mm (GALV)", nl: 180, nm: 250, nh: 300, ul: 110, um: 130, uh: 200 },
+    { s: 128, d: "BS Rack Hot Dip-0770mm (GALV)- Detachable", nl: 180, nm: 250, nh: 300, ul: 110, um: 130, uh: 200 }
+];
+
+let quote = [];
+let uniqueIdCounter = 0;
+
+// Initialize Date to Today
+window.onload = function() {
+    document.getElementById('quoteDate').valueAsDate = new Date();
+};
+
+const dl = document.getElementById('itemData');
+db.forEach(item => {
+    let opt = document.createElement('option');
+    opt.value = `${item.s}. ${item.d}`;
+    dl.appendChild(opt);
+});
+
+// Helper
+function getUid() {
+    uniqueIdCounter++;
+    return 'row_' + uniqueIdCounter;
+}
+
+function getConditionText(key) {
+    const map = {
+        'nm': 'New (Medium)', 'um': 'Used (Medium)',
+        'nl': 'New (Low)', 'ul': 'Used (Low)',
+        'nh': 'New (High)', 'uh': 'Used (High)'
+    };
+    return map[key] || key;
+}
+
+// Generators
+function generateFullRinglockList() {
+    clearList();
+    const condKey = document.getElementById('defaultCondition').value;
+    const condText = getConditionText(condKey);
+
+    db.forEach(item => {
+        if (item.d.includes("Ringlock")) {
+            quote.push({ 
+                uid: getUid(),
+                s: item.s, 
+                name: item.d, 
+                typeKey: condKey, 
+                type: condText, 
+                unit: item[condKey], 
+                qty: 1 
+            });
+        }
+    });
+    renderTable();
+}
+
+function generateFrameList() {
+    clearList();
+    const condKey = document.getElementById('defaultCondition').value;
+    const condText = getConditionText(condKey);
+
+    db.forEach(item => {
+        if (item.d.includes("Frame") || item.d.includes("Brace") || item.d.includes("Jack") || item.d.includes("Pipe")) {
+            if (!item.d.includes("Ringlock")) {
+                quote.push({ 
+                    uid: getUid(),
+                    s: item.s, 
+                    name: item.d, 
+                    typeKey: condKey,
+                    type: condText, 
+                    unit: item[condKey], 
+                    qty: 1 
+                });
+            }
+        }
+    });
+    renderTable();
+}
+
+// Add Item Manually
+function addManualItem() {
+    const inputVal = document.getElementById('manualSearch').value;
+    const match = db.find(x => `${x.s}. ${x.d}` === inputVal);
+    
+    if (match) {
+        const condKey = document.getElementById('defaultCondition').value;
+        const condText = getConditionText(condKey);
+        
+        quote.push({
+            uid: getUid(),
+            s: match.s,
+            name: match.d,
+            typeKey: condKey,
+            type: condText,
+            unit: match[condKey],
+            qty: 1
+        });
+        
+        renderTable();
+        document.getElementById('manualSearch').value = "";
+    } else {
+        alert("Item not found! Please check the item code or name.");
+    }
+}
+
+function clearList() {
+    quote = [];
+    uniqueIdCounter = 0;
+    renderTable();
+}
+
+// Render Table
+function renderTable() {
+    quote.sort((a, b) => a.s - b.s);
+
+    const body = document.getElementById('quoteBody');
+    body.innerHTML = "";
+
+    quote.forEach((item, index) => {
+        let lineTotal = item.unit * item.qty;
+        
+        let prefix = "USED";
+        if (item.typeKey && (item.typeKey.startsWith('n'))) {
+            prefix = "NEW";
+        }
+
+        body.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    <span class="print-prefix">${prefix} - </span>${item.name}
+                </td>
+                <td class="col-condition">${item.type}</td>
+                <td>${item.unit.toFixed(2)}</td>
+                <td style="text-align:center;">
+                    <input type="number" class="qty-input" value="${item.qty}" 
+                    oninput="updateQty('${item.uid}', this.value)">
+                </td>
+                <td id="total-${item.uid}" style="text-align:right;">${lineTotal.toFixed(2)}</td>
+                <td class="no-print" style="text-align:center;">
+                    <button class="btn-remove" onclick="removeItem('${item.uid}')">Del</button>
+                </td>
+            </tr>`;
+    });
+    calculateTotals();
+}
+
+// Update Quantity
+function updateQty(uid, newQty) {
+    const item = quote.find(q => q.uid === uid);
+    if (item) {
+        item.qty = parseFloat(newQty) || 0;
+        const lineTotal = item.unit * item.qty;
+        document.getElementById(`total-${uid}`).innerText = lineTotal.toFixed(2);
+        calculateTotals();
+    }
+}
+
+// Remove Function
+function removeItem(uid) {
+    const index = quote.findIndex(q => q.uid === uid);
+    if (index > -1) {
+        quote.splice(index, 1);
+        renderTable(); 
+    }
+}
+
+// Calculate Totals
+function calculateTotals() {
+    let subtotal = 0;
+    quote.forEach(item => { subtotal += item.unit * item.qty; });
+
+    const dType = document.getElementById('discountType').value;
+    const dVal = parseFloat(document.getElementById('discountVal').value) || 0;
+    let discountAmount = dType === "percent" ? subtotal * (dVal / 100) : dVal;
+
+    const afterDisc = Math.max(0, subtotal - discountAmount);
+    const gst = afterDisc * 0.09;
+    const total = afterDisc + gst;
+
+    document.getElementById('subTotal').innerText = subtotal.toFixed(2);
+    document.getElementById('print_discountAmount').innerText = discountAmount.toFixed(2);
+    document.getElementById('afterDiscount').innerText = afterDisc.toFixed(2);
+    document.getElementById('gstAmount').innerText = gst.toFixed(2);
+    document.getElementById('finalTotal').innerText = total.toFixed(2);
+}
+
+// Print Setup Logic
+function preparePrint() {
+    const fields = ['clientName', 'quoteNo', 'clientContact', 'quoteDate'];
+    fields.forEach(field => {
+        const val = document.getElementById(field).value;
+        document.getElementById('print_' + field).innerText = val || '-';
+    });
+    window.print();
+}
+</script>
+
+</body>
+</html>
